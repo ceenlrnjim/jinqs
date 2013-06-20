@@ -6,38 +6,27 @@ public class NaiveEnumerable implements Enumerable {
 
     // Projection
     public <S,T> Iterable<T> select(Iterable<S> source, Fn1<S,T> selector) {
-        LinkedList<T> result = new LinkedList<T>();
-        for (S s : source) {
-            result.add(selector.apply(s));
-        }
-
-        return result;
+        return new LazySelect(source, selector);
     }
 
     // Cross-Apply
     public <S,T> Iterable<T> selectMany(Iterable<S> source, Fn1<S, Iterable<T>> selector) {
-        LinkedList<T> result = new LinkedList<T>();
-        for (S s : source) {
-            Iterable<T> ts = selector.apply(s);
-            // addAll requires a collection
-            for (T t : ts) {
-                result.add(t);
-            }
-        }
-
-        return result;
+        //LinkedList<T> result = new LinkedList<T>();
+        //for (S s : source) {
+            //Iterable<T> ts = selector.apply(s);
+            //// addAll requires a collection
+            //for (T t : ts) {
+                //result.add(t);
+            //}
+        //}
+//
+        //return result;
+        return new LazySelectMany(source, selector);
     }
 
     // selection
     public <T> Iterable<T> where(Iterable<T> source, Fn1<T,Boolean> predicate) {
-        LinkedList<T> result = new LinkedList<T>();
-        for (T t : source) {
-            if (predicate.apply(t).booleanValue()) {
-                result.add(t);
-            }
-        }
-
-        return result;
+        return new LazyWhere(source,predicate);
     }
 
 
