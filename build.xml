@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+<project name="jinqs" default="compile" basedir=".">
+
+	<path id="build.tests.classpath">
+		<!-- add what is needed for AspectJ  -->
+		<pathelement location="lib/junit-4.11.jar"/>
+		<pathelement location="lib/hamcrest-core-1.3.jar"/>
+    </path>
+
+    <target name="compile">
+        <mkdir dir="${basedir}/target/classes"/>
+        <javac srcdir="${basedir}/src/main/java"
+               destdir="${basedir}/target/classes"
+               debug="on">
+        </javac>
+    </target>
+
+    <target name="test-compile" depends="compile">
+        <mkdir dir="${basedir}/target/test-classes"/>
+        <javac srcdir="${basedir}/src/test/java"
+               destdir="${basedir}/target/test-classes"
+               debug="on">
+            <classpath>
+                <path refid="build.tests.classpath"/>
+                <pathelement location="target/classes"/>
+            </classpath>
+
+        </javac>
+    </target>
+
+    <target name="test" depends="test-compile">
+        <mkdir dir="target/test-output"/>
+        <junit printsummary="yes">
+
+            <classpath>
+                <pathelement location="target/test-classes"/>
+                <pathelement location="target/classes"/>
+            </classpath>
+
+            <formatter type="plain"/>
+            <batchtest todir="target/test-output">
+                <fileset dir="src/test/java">
+                    <include name="**/*Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+</project>

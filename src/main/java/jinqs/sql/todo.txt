@@ -1,0 +1,2 @@
+fluent interface on sql - or just straight up re-use jdbi (or whatever drop-wizard uses)
+result set is not iterable, so I'll need a wrapper to convert it - look at spring JDBCTemplate type options
