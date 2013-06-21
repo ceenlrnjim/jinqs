@@ -47,4 +47,8 @@
         </junit>
     </target>
 
+    <target name="clean">
+        <delete dir="target"/>
+    </target>
+
 </project>

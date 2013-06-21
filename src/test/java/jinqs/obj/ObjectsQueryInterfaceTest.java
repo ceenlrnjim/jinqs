@@ -5,8 +5,10 @@ import static org.junit.Assert.*;
 
 import java.util.*;
 import jinqs.*;
+import jinqs.Fns;
 import static jinqs.Fns.Predicates.*;
 import static jinqs.Fns.Accessors.*;
+import static jinqs.Fns.Comparators.*;
 
 public class ObjectsQueryInterfaceTest {
     private LinkedList<String[]> dataSet = new LinkedList<String[]>();
@@ -121,5 +123,19 @@ public class ObjectsQueryInterfaceTest {
         assertTrue("Joan", allresults.contains("Joan_Category A"));
         assertTrue("Jerry", allresults.contains("Jerry_Category B"));
         assertTrue("Jules", allresults.contains("Jules_Category B"));
+    }
+
+    @Test
+    public void testOrderBy() {
+        Iterable<String[]> result = ObjectsQueryInterface.from(dataSet)
+                                                       .orderBy(arrayIndexComparator(Fns.Accessors.<String>valueAtIndex(0)))
+                                                       //.select(valueAtIndex(0))
+                                                       .run();
+
+        Iterator<String[]> resultItr = result.iterator();
+        assertEquals("Jerry", resultItr.next()[0]);
+        assertEquals("Jim", resultItr.next()[0]);
+        assertEquals("Joan", resultItr.next()[0]);
+        assertEquals("Jules", resultItr.next()[0]);
     }
 }

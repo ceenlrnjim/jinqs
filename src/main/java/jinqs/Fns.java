@@ -1,6 +1,6 @@
 package jinqs;
 
-import java.util.Map;
+import java.util.*;
 
 public class Fns {
     public static class Predicates {
@@ -35,6 +35,25 @@ public class Fns {
             return new Fn1<Map<K,V>,V>() {
                 public V apply(Map<K,V> t) {
                     return t.get(key);
+                }
+            };
+        }
+
+    }
+
+    public static class Comparators {
+        public final static <T,S extends Comparable> Comparator<T> fieldComparator(final Fn1<T,S> accessor) {
+            return new Comparator<T>() {
+                public int compare(T a, T b) {
+                    return accessor.apply(a).compareTo(accessor.apply(b));
+                }
+            };
+        }
+        // can I get the above to work for arrays?
+        public final static <T extends Comparable> Comparator<T[]> arrayIndexComparator(final Fn1<T[],T> accessor) {
+            return new Comparator<T[]>() {
+                public int compare(T[] a, T[] b) {
+                    return accessor.apply(a).compareTo(accessor.apply(b));
                 }
             };
         }

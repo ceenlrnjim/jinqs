@@ -2,6 +2,7 @@ package jinqs.obj;
 
 
 import jinqs.*;
+import java.util.*;
 
 /**
  * ObjectQueryInterface.from(rows).where(someFn).where(someOtherFn).select(selectorFn)
@@ -41,6 +42,10 @@ public class ObjectsQueryInterface {
                                             Fn1<TInner,TKey> innerKeyFn,
                                             Fn2<T,TInner,TJoined> selector) {
             return new Query<TJoined>(enumerable.join(source, innerSource, outerKeyFn, innerKeyFn, selector));
+        }
+
+        public Query<T> orderBy(Comparator<? super T> comp) {
+            return new Query<T>(enumerable.orderBy(source, comp));
         }
 
         public Iterable<T> run() {

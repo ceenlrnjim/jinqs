@@ -11,16 +11,6 @@ public class NaiveEnumerable implements Enumerable {
 
     // Cross-Apply
     public <S,T> Iterable<T> selectMany(Iterable<S> source, Fn1<S, Iterable<T>> selector) {
-        //LinkedList<T> result = new LinkedList<T>();
-        //for (S s : source) {
-            //Iterable<T> ts = selector.apply(s);
-            //// addAll requires a collection
-            //for (T t : ts) {
-                //result.add(t);
-            //}
-        //}
-//
-        //return result;
         return new LazySelectMany(source, selector);
     }
 
@@ -53,6 +43,26 @@ public class NaiveEnumerable implements Enumerable {
         }
 
         return result;
+    }
+
+    public <T> Iterable<T> orderBy(final Iterable<T> source, final Comparator<? super T> comp) {
+        // want lazy sorting
+        return new Iterable<T>() {
+            private Iterable<T> orderedSource = null;
+
+            public synchronized Iterator<T> iterator() {
+                // but we don't want to do the sort multiple times
+                if (orderedSource == null) {
+                    // must be a better way to do this
+                    LinkedList<T> list = new LinkedList<T>();
+                    for (T t : source) list.add(t);
+                    Collections.sort(list, comp);
+                    orderedSource = list;
+                }
+
+                return orderedSource.iterator();
+            }
+        };
     }
 
 }
