@@ -64,11 +64,55 @@ public class ObjectsQueryInterfaceTest {
 
         Iterable<String> result = ObjectsQueryInterface.from(dataSet)
                                                        .join(dataSet2, valueAtIndex(2), valueAtIndex(0), selector)
-                                                       .select(Fns.<Map<String,String>>identity())
+                                                       //TODO: this type isn't right, why didn't this fail?
+                                                       //.select(Fns.<Map<String,String>>identity())
                                                        .run();
         
         HashSet allresults = new HashSet();
         for (String s : result) {
+            allresults.add(s);
+        }
+
+        assertEquals("Result Count", 4, allresults.size());
+        assertTrue("Jim", allresults.contains("Jim_Category A"));
+        assertTrue("Joan", allresults.contains("Joan_Category A"));
+        assertTrue("Jerry", allresults.contains("Jerry_Category B"));
+        assertTrue("Jules", allresults.contains("Jules_Category B"));
+    }
+
+    @Test
+    public void testSelectMany() {
+        // implementing join with select many
+        Fn1<String[],Iterable<String[]>> selector = new Fn1<String[], Iterable<String[]>>() {
+            public Iterable<String[]> apply(final String[] a) {
+                return ObjectsQueryInterface.from(dataSet)
+                                            .where(indexEquals(2, a[0]))
+                                            .select(new Fn1<String[],String[]>() {
+                                                public String[] apply(String[] b) {
+                                                    List<String> result = new ArrayList<String>(a.length + b.length);
+                                                    result.addAll(Arrays.asList(a));
+                                                    result.addAll(Arrays.asList(b));
+                                                    return result.toArray(a); // this sucks
+                                                    
+                                                }
+                                            }).run();
+            }
+        };
+
+        Fn1<String[],String> formatter = new Fn1<String[],String>() {
+            public String apply(String[] o) {
+                return o[2] + "_" + o[1];
+            }
+        };
+
+        Iterable<String> result = ObjectsQueryInterface.from(dataSet2)
+                                                       .selectMany(selector)
+                                                       .select(formatter)
+                                                       .run();
+        
+        HashSet allresults = new HashSet();
+        for (String s : result) {
+            System.out.println(s);
             allresults.add(s);
         }
 

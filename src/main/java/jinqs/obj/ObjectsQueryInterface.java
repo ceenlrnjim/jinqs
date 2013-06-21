@@ -31,6 +31,10 @@ public class ObjectsQueryInterface {
             return new Query<U>(enumerable.select(source,selector));
         }
 
+        public <U> Query<U> selectMany(Fn1<T,Iterable<U>> selector) {
+            return new Query<U>(enumerable.selectMany(source,selector));
+        }
+
         // TODO: support where before join? join after selector?
         public <TInner,TKey,TJoined> Query<TJoined> join(Iterable<TInner> innerSource, 
                                             Fn1<T,TKey> outerKeyFn,
