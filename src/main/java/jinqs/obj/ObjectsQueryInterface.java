@@ -7,7 +7,7 @@ import java.util.*;
 /**
  * ObjectQueryInterface.from(rows).where(someFn).where(someOtherFn).select(selectorFn)
  *
- * TODO: group by, order by etc
+ * TODO: what about a more limited, comprehension like syntax (for in do if then yield)
  */
 public class ObjectsQueryInterface {
     private static Enumerable enumerable = new NaiveEnumerable(); // TODO: dependency injection
@@ -20,6 +20,7 @@ public class ObjectsQueryInterface {
     public static class Query<T> {
         private Iterable<T> source;
 
+        //public <S extends Iterable<T>> Query(S source) {
         public Query(Iterable<T> source) {
             this.source = source;
         }
@@ -36,7 +37,6 @@ public class ObjectsQueryInterface {
             return new Query<U>(enumerable.selectMany(source,selector));
         }
 
-        // TODO: support where before join? join after selector?
         public <TInner,TKey,TJoined> Query<TJoined> join(Iterable<TInner> innerSource, 
                                             Fn1<T,TKey> outerKeyFn,
                                             Fn1<TInner,TKey> innerKeyFn,
@@ -47,6 +47,12 @@ public class ObjectsQueryInterface {
         public Query<T> orderBy(Comparator<? super T> comp) {
             return new Query<T>(enumerable.orderBy(source, comp));
         }
+
+        // Note: this is not lazy
+        // TODO: get the types to work
+        //public <U> Query<Map.Entry<U,T>> groupBy(Fn1<T,U> classifier) {
+            //return new Query<Map.Entry<U,T>>(enumerable.<U,T>groupBy(source, classifier));
+        //}
 
         public Iterable<T> run() {
             return source;
