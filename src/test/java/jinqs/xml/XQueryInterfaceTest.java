@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import javax.xml.transform.*;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.xquery.*;
+import java.util.*;
 
 public class XQueryInterfaceTest {
 
@@ -14,9 +15,21 @@ public class XQueryInterfaceTest {
         Iterable<XQItem> result = new XQueryInterface(src, "n")
                                         .query("for $e in $n/emps/emp\nlet $name := $e/name\nwhere $e/salary > 250\nreturn <earner name='{$name}'>{$e}</earner>")
                                         .run();
+        HashSet names = new HashSet();
 
-        for (XQItem item : result) {
-            System.out.println(item);
+        try {
+            for (XQItem item : result) {
+                names.add(item.getNode().getAttributes().getNamedItem("name").getNodeValue());
+            }
+
+            assertTrue(names.contains("Jenny"));
+            assertTrue(names.contains("Jake"));
+            assertTrue(names.contains("Jerome"));
+            assertTrue(names.contains("Julie"));
+            assertTrue(names.contains("Jessica"));
+        } catch (XQException xe) {
+            xe.printStackTrace();
+            fail(xe.getMessage());
         }
     }
 
