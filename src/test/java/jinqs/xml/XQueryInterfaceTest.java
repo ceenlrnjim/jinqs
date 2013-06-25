@@ -6,6 +6,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.xquery.*;
 import java.util.*;
+import jinqs.*;
 
 public class XQueryInterfaceTest {
 
@@ -32,6 +33,53 @@ public class XQueryInterfaceTest {
             fail(xe.getMessage());
         }
     }
+
+    @Test
+    public void testMultipleDocuments() {
+        SAXSource emps = new SAXSource(new org.xml.sax.InputSource(new java.io.StringReader(testData)));
+        SAXSource deps = new SAXSource(new org.xml.sax.InputSource(new java.io.StringReader(depts)));
+
+        HashMap<String,String> resultMap = new HashMap<String,String>();
+        Iterable<String[]> result = new NaiveEnumerable().select(new XQueryInterface(emps, "edoc")
+                                                                    .addSource(deps, "ddoc")
+                                                                    .query("for $d in $ddoc/depts/deptno "+
+                                                                           "let $e := $edoc/emps/emp[deptno = $d] "+
+                                                                           //"where fn:count($e) >= 2"+
+                                                                           "order by fn:avg($e/salary) descending "+
+                                                                           "return <result dept='{$d/text()}' size='{fn:count($e)}'/>")
+                                                                    .run(), 
+                                                                  new Fn1<XQItem,String[]>() {
+            public String[] apply(XQItem item) {
+                try {
+                    String[] result = new String[2];
+                    result[0] = item.getNode().getAttributes().getNamedItem("dept").getNodeValue();
+                    result[1] = item.getNode().getAttributes().getNamedItem("size").getNodeValue();
+                    return result;
+                } catch (XQException xe) {
+                    throw new RuntimeException(xe);
+                }
+            }
+        });
+
+        for (String[] item : result) {
+            resultMap.put(item[0], item[1]);
+        }
+
+        assertEquals("2",resultMap.get("1"));
+        assertEquals("2",resultMap.get("2"));
+        assertEquals("2",resultMap.get("3"));
+        assertEquals("2",resultMap.get("4"));
+        assertEquals("1",resultMap.get("5"));
+
+    }
+
+    private static final String depts = "<depts>"+
+                                        "    <deptno>1</deptno>"+
+                                        "    <deptno>2</deptno>"+
+                                        "    <deptno>3</deptno>"+
+                                        "    <deptno>4</deptno>"+
+                                        "    <deptno>5</deptno>"+
+                                        "</depts>";
 
     private static final String testData =  "<emps>"+
                                             "    <emp active='true'>"+

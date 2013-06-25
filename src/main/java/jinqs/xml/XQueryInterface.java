@@ -12,23 +12,25 @@ import javax.xml.namespace.QName;
 public class XQueryInterface {
 
     private String queryString;
-    private Source source;
-    private String documentVarName;
+    private List<Source> sources = new LinkedList<Source>();
+    private List<String> sourceNames = new LinkedList<String>();
+
+    public XQueryInterface() {
+    }
 
     /**
      * @param source the xml document to be queries
      * @param varName the name of the external xquery variable that the document should be set to for referring to it in the query string
      */
-    // TODO: support for querying multiple xml documents
     public XQueryInterface(Source source, String varName) {
-        this.source = source;
-        this.documentVarName = varName;
+        this.sources.add(source);
+        this.sourceNames.add(varName);
     }
 
-    public XQueryInterface(Source source, String q, String varName) {
-        this.source = source;
-        this.queryString = q;
-        this.documentVarName = varName;
+    public XQueryInterface addSource(Source source, String name) {
+        sources.add(source);
+        sourceNames.add(name);
+        return this;
     }
 
     /** 
@@ -41,9 +43,7 @@ public class XQueryInterface {
         return this;
     }
 
-    public XQueryInterface bind(String var, String value) {
-        return new XQueryInterface(source, queryString.replace(var,value));
-    }
+    // TODO: bind
 
     public Iterable<XQItem> run() {
         try {
@@ -56,15 +56,22 @@ public class XQueryInterface {
             //XQueryEvaluator evaler = executable.load();
             //evaler.setExternalVariable(new QName(documentVarName), doc);
             //return evaler;
+            StringBuilder bldr = new StringBuilder();
             
-            // TODO: multiple xml documents?
             Configuration cfg = new Configuration();
-            //cfg.addSchemaSource(source);
             SaxonXQDataSource ds = new SaxonXQDataSource(cfg);
             // TODO: connection handling
             XQConnection conn = ds.getConnection();
-            XQPreparedExpression xqp = conn.prepareExpression("declare variable $" + documentVarName + " external; " + queryString);
-            xqp.bindDocument(new QName(documentVarName), source, null);
+
+            for (int i=0;i<sources.size();i++) {
+                bldr.append("declare variable $").append(sourceNames.get(i)).append(" external; ");
+            }
+            bldr.append(queryString);
+            
+            XQPreparedExpression xqp = conn.prepareExpression(bldr.toString());
+            for (int i=0;i<sources.size();i++) {
+                xqp.bindDocument(new QName(sourceNames.get(i)), sources.get(i), null);
+            }
             XQResultSequence seq = xqp.executeQuery();
 
             return new IterableXQSequence(seq);
