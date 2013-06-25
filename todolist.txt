@@ -1,0 +1,6 @@
+add SQL interface
+add LDAP interface
+add XQuery FLWOR interface
+add JSON interface - maybe convert to XML and query with flwor?
+implement more join algorithms/options
+add more convenience methods (take, while, until, etc.)

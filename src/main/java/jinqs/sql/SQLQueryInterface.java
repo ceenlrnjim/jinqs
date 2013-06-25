@@ -10,6 +10,7 @@ public class SQLQueryInterface {
     private Connection conn;
 
     private SQLQueryInterface(Connection connection) {
+        conn = connection;
     }
 
     public static SQLQueryInterface withConnection(Connection connection) {
@@ -20,13 +21,14 @@ public class SQLQueryInterface {
     //public static SQLQueryInterface withDataSource(DataSource ds) {
     //}
 
-    public Query executeQuery(String query) {
+    public Query query(String query) {
         return new Query(query);
     }
 
     public class Query {
         private PreparedStatement stmt;
-        private Map<String,Integer> indexMapping;
+        private Map<Integer,String> indexMapping;
+        private Map<String,Object> valueMapping;
 
         public Query(String queryString) {
             try {
@@ -34,34 +36,32 @@ public class SQLQueryInterface {
                 String regex = ":[a-zA-Z0-9]+";
                 Matcher m = Pattern.compile(regex).matcher(queryString);
 
-                indexMapping = new HashMap<String,Integer>();
+                valueMapping = new HashMap<String,Object>();
+                indexMapping = new HashMap<Integer,String>();
                 while (m.find()) {
-                    indexMapping.put(m.group().substring(1), new Integer(i));
+                    indexMapping.put(new Integer(i),m.group().substring(1));
                     i++;
                 }
 
-                stmt = conn.prepareStatement(queryString.replaceAll(regex, "?"));
+                String finalQuery = queryString.replaceAll(regex, "?");
+                stmt = conn.prepareStatement(finalQuery);
             } catch (SQLException sqle) {
                 throw new RuntimeException(sqle);
             }
-        }
-
-        public Query(PreparedStatement stmt, Map<String,Integer> indexMapping) {
-            this.stmt = stmt;
-            this.indexMapping = indexMapping;
         }
 
         // TODO: other types
-        public void bind(String var, Object o) {
-            try {
-                stmt.setObject(indexMapping.get(var).intValue(), o);
-            } catch (SQLException sqle) {
-                throw new RuntimeException(sqle);
-            }
+        public Query bind(String var, Object o) {
+            valueMapping.put(var, o);
+            return this;
         }
 
         public Iterable<ResultSet> run() {
             try {
+                for (Map.Entry<Integer,String> entry : indexMapping.entrySet()) {
+                    stmt.setObject(entry.getKey().intValue(), valueMapping.get(entry.getValue()));
+                }
+
                 return new IterableResultSet(stmt.executeQuery());
             } catch (SQLException sqle) {
                 throw new RuntimeException(sqle);

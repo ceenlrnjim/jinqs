@@ -25,7 +25,7 @@ public class NaiveEnumerable implements Enumerable {
                                                                   Fn1<TOuter, TKey> outerKeySelector,
                                                                   Fn1<TInner, TKey> innerKeySelector,
                                                                   Fn2<TOuter, TInner, TResult> resultBuilder) {
-        // TODO: refactor join to use selectMany for the nested loop join
+        // TODO: refactor join to use selectMany for the nested loop join - should be more lazy that way
         // TODO: add explicit merge sort join for times when the iterables are already sorted in the same order
         return new LazyJoin<TOuter, TInner, TKey, TResult>(outers,inners,outerKeySelector, innerKeySelector, resultBuilder);
     }

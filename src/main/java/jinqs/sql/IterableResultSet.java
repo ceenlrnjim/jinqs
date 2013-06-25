@@ -18,7 +18,7 @@ public class IterableResultSet implements Iterable<ResultSet> {
 
     public Iterator<ResultSet> iterator() {
         try {
-            if (!source.isFirst()) source.first();
+            if (!source.isBeforeFirst()) source.first();
         } catch (SQLException sqle) {
             throw new IllegalStateException(sqle);
         }

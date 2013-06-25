@@ -6,6 +6,14 @@
 		<!-- add what is needed for AspectJ  -->
 		<pathelement location="lib/junit-4.11.jar"/>
 		<pathelement location="lib/hamcrest-core-1.3.jar"/>
+		<pathelement location="lib/ojdbc14.jar"/>
+        <pathelement location="lib/Saxon-HE-9.5.0.2.jar"/>
+        <!--<pathelement location="lib/xqjapi.jar"/>-->
+    </path>
+
+    <path id="compile.classpath">
+        <!--<pathelement location="lib/xqjapi.jar"/>-->
+        <pathelement location="lib/Saxon-HE-9.5.0.2.jar"/>
     </path>
 
     <target name="compile">
@@ -13,6 +21,9 @@
         <javac srcdir="${basedir}/src/main/java"
                destdir="${basedir}/target/classes"
                debug="on">
+            <classpath>
+                <path refid="compile.classpath"/>
+            </classpath>
         </javac>
     </target>
 
@@ -36,6 +47,7 @@
             <classpath>
                 <pathelement location="target/test-classes"/>
                 <pathelement location="target/classes"/>
+                <path refid="build.tests.classpath"/>
             </classpath>
 
             <formatter type="plain"/>
