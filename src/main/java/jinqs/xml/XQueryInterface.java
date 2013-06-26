@@ -14,6 +14,7 @@ public class XQueryInterface {
     private String queryString;
     private List<Source> sources = new LinkedList<Source>();
     private List<String> sourceNames = new LinkedList<String>();
+    private Map<String,Object> bindValues = new HashMap<String,Object>();
 
     public XQueryInterface() {
     }
@@ -43,7 +44,22 @@ public class XQueryInterface {
         return this;
     }
 
-    // TODO: bind
+    // TODO: other types
+    public XQueryInterface bindObject(String name, Object value) {
+        bindValues.put(name, value);
+        return this;
+    }
+    
+    /**
+     * Utility method for accessing attributes of XQItems 
+     */
+    public static String getItemAttributeValue(XQItem item, String attributeName) {
+        try {
+            return item.getNode().getAttributes().getNamedItem(attributeName).getNodeValue();
+        } catch (XQException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public Iterable<XQItem> run() {
         try {
@@ -72,6 +88,10 @@ public class XQueryInterface {
             for (int i=0;i<sources.size();i++) {
                 xqp.bindDocument(new QName(sourceNames.get(i)), sources.get(i), null);
             }
+            for (Map.Entry<String,Object> e : bindValues.entrySet()) {
+                xqp.bindObject(new QName(e.getKey()), e.getValue(), null);
+            }
+
             XQResultSequence seq = xqp.executeQuery();
 
             return new IterableXQSequence(seq);

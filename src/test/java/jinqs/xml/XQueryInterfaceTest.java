@@ -7,6 +7,7 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.xquery.*;
 import java.util.*;
 import jinqs.*;
+import static jinqs.xml.XQueryInterface.getItemAttributeValue;
 
 public class XQueryInterfaceTest {
 
@@ -18,20 +19,15 @@ public class XQueryInterfaceTest {
                                         .run();
         HashSet names = new HashSet();
 
-        try {
-            for (XQItem item : result) {
-                names.add(item.getNode().getAttributes().getNamedItem("name").getNodeValue());
-            }
-
-            assertTrue(names.contains("Jenny"));
-            assertTrue(names.contains("Jake"));
-            assertTrue(names.contains("Jerome"));
-            assertTrue(names.contains("Julie"));
-            assertTrue(names.contains("Jessica"));
-        } catch (XQException xe) {
-            xe.printStackTrace();
-            fail(xe.getMessage());
+        for (XQItem item : result) {
+            names.add(getItemAttributeValue(item, "name"));
         }
+
+        assertTrue(names.contains("Jenny"));
+        assertTrue(names.contains("Jake"));
+        assertTrue(names.contains("Jerome"));
+        assertTrue(names.contains("Julie"));
+        assertTrue(names.contains("Jessica"));
     }
 
     @Test
@@ -49,18 +45,15 @@ public class XQueryInterfaceTest {
                                                                            "return <result dept='{$d/text()}' size='{fn:count($e)}'/>")
                                                                     .run(), 
                                                                   new Fn1<XQItem,String[]>() {
-            public String[] apply(XQItem item) {
-                try {
-                    String[] result = new String[2];
-                    result[0] = item.getNode().getAttributes().getNamedItem("dept").getNodeValue();
-                    result[1] = item.getNode().getAttributes().getNamedItem("size").getNodeValue();
-                    return result;
-                } catch (XQException xe) {
-                    throw new RuntimeException(xe);
-                }
-            }
-        });
+                                                                    public String[] apply(XQItem item) {
+                                                                        String[] result = new String[2];
+                                                                        result[0] = getItemAttributeValue(item, "dept");
+                                                                        result[1] = getItemAttributeValue(item,"size");
+                                                                        return result;
+                                                                    }
+                                                                });
 
+        // TODO: need a reduce function
         for (String[] item : result) {
             resultMap.put(item[0], item[1]);
         }
@@ -70,6 +63,27 @@ public class XQueryInterfaceTest {
         assertEquals("2",resultMap.get("3"));
         assertEquals("2",resultMap.get("4"));
         assertEquals("1",resultMap.get("5"));
+
+    }
+
+    @Test 
+    public void testBind() {
+        SAXSource emps = new SAXSource(new org.xml.sax.InputSource(new java.io.StringReader(testData)));
+        Iterable<XQItem> result = new XQueryInterface(emps, "e")
+                                        .query("declare variable $limit external; for $emp in $e/emps/emp where $emp/salary <= $limit return <result name='{$emp/name}' salary='{$emp/salary}'/>")
+                                        .bindObject("limit", new Integer(200))
+                                        .run();
+
+        HashSet names = new HashSet();
+        for (XQItem item : result) {
+            names.add(getItemAttributeValue(item, "name"));
+        }
+
+        assertTrue(names.contains("Jeremy"));
+        assertTrue(names.contains("John"));
+        assertTrue(names.contains("Joan"));
+        assertFalse(names.contains("Julie"));
+        assertFalse(names.contains("Jessica"));
 
     }
 
