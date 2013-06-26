@@ -27,8 +27,65 @@ public class NaiveEnumerable implements Enumerable {
                                                                   Fn2<TOuter, TInner, TResult> resultBuilder) {
         // TODO: refactor join to use selectMany for the nested loop join - should be more lazy that way
         // TODO: add explicit merge sort join for times when the iterables are already sorted in the same order
-        return new LazyJoin<TOuter, TInner, TKey, TResult>(outers,inners,outerKeySelector, innerKeySelector, resultBuilder);
+        // TODO: add hash-join implementation
+        //return new LazyJoin<TOuter, TInner, TKey, TResult>(outers,inners,outerKeySelector, innerKeySelector, resultBuilder);
+        return nestedLoopJoin(outers,inners,outerKeySelector, innerKeySelector, resultBuilder);
     }
+
+    public <TOuter, TInner, TKey, TResult> Iterable<TResult> nestedLoopJoin(final Iterable<TOuter> outers, 
+                                                                            final Iterable<TInner> inners, 
+                                                                            final Fn1<TOuter, TKey> outerKeySelector,
+                                                                            final Fn1<TInner, TKey> innerKeySelector,
+                                                                            final Fn2<TOuter, TInner, TResult> resultBuilder) {
+        return selectMany(outers, new Fn1<TOuter, Iterable<TResult>>() {
+            public Iterable<TResult> apply(final TOuter outerRow) {
+                final Iterable<TInner> matches = where(inners, new Fn1<TInner,Boolean>() {
+                    public Boolean apply(TInner innerRow) {
+                        return Boolean.valueOf(outerKeySelector.apply(outerRow).equals(innerKeySelector.apply(innerRow)));
+                    }
+                });
+
+                return select(matches, new Fn1<TInner, TResult>() {
+                    public TResult apply(TInner ir) {
+                        return resultBuilder.apply(outerRow, ir);
+                    }
+                });
+            }
+        });
+    }
+
+    public <TOuter, TInner, TKey, TResult> Iterable<TResult> hashJoin(final Iterable<TOuter> outers, 
+                                                                      final Iterable<TInner> inners, 
+                                                                      final Fn1<TOuter, TKey> outerKeySelector,
+                                                                      final Fn1<TInner, TKey> innerKeySelector,
+                                                                      final Fn2<TOuter, TInner, TResult> resultBuilder) {
+
+        // TODO: convert to lazy
+        Collection<TResult> results = new LinkedList<TResult>();
+        HashMap<TKey,Collection<TInner>> hashedInners = new <TKey,Collection<TInner>>HashMap();
+        for (TInner innerRow : inners) {
+            TKey innerKey = innerKeySelector.apply(innerRow);
+            Collection<TInner> rows = hashedInners.get(innerKey);
+            if (rows == null) {
+                rows = new LinkedList<TInner>();
+                hashedInners.put(innerKey, rows);
+            }
+            rows.add(innerRow);
+        }
+
+        for (TOuter outerRow : outers) {
+            TKey outerKey = outerKeySelector.apply(outerRow);
+            Collection<TInner> matches = hashedInners.get(outerKey);
+            if (matches != null) {
+                for (TInner innerRow : matches) {
+                    results.add(resultBuilder.apply(outerRow, innerRow));
+                }
+            }
+        }
+
+        return results;
+    }
+
 
     public <K,T> IterableMap<K,? extends Iterable<T>> groupBy(Iterable<T> source, Fn1<T,K> classifier) {
         IterableMap<K,LinkedList<T>> result = new IterableHashMap<K,LinkedList<T>>();
