@@ -13,6 +13,7 @@ import static jinqs.Fns.Comparators.*;
 public class ObjectsQueryInterfaceTest {
     private LinkedList<String[]> dataSet = new LinkedList<String[]>();
     private LinkedList<String[]> dataSet2 = new LinkedList<String[]>();
+    private LinkedList<String[]> dataSet3 = new LinkedList<String[]>();
 
     public ObjectsQueryInterfaceTest() {
         dataSet.add(new String[] {"Jim","10","A"});
@@ -21,6 +22,11 @@ public class ObjectsQueryInterfaceTest {
         dataSet.add(new String[] {"Jules","13","B"});
         dataSet2.add(new String[] {"A","Category A"});
         dataSet2.add(new String[] {"B","Category B"});
+        dataSet3.add(new String[] {"10","Attr10"});
+        dataSet3.add(new String[] {"11","Attr11"});
+        dataSet3.add(new String[] {"12","Attr12"});
+        dataSet3.add(new String[] {"13","Attr13"});
+        dataSet3.add(new String[] {"14","Attr14"});
     }
 
     @Test
@@ -105,6 +111,31 @@ public class ObjectsQueryInterfaceTest {
         assertTrue("Jerry", allresults.contains("Jerry_Category B"));
         assertTrue("Jules", allresults.contains("Jules_Category B"));
     }
+
+    @Test
+    public void testSortMergeJoin() {
+        Fn2<String[],String[],String> selector = new Fn2<String[],String[],String>() {
+            public String apply(String[] o, String[] i) {
+                return o[0] + "_" + i[1];
+            }
+        };
+
+        Iterable<String> result = ObjectsQueryInterface.from(dataSet)
+                                                       .sortMergeJoin(dataSet3, valueAtIndex(1), valueAtIndex(0), selector)
+                                                       .run();
+        
+        HashSet allresults = new HashSet();
+        for (String s : result) {
+            allresults.add(s);
+        }
+
+        assertEquals("Result Count", 4, allresults.size());
+        assertTrue("Jim", allresults.contains("Jim_Attr10"));
+        assertTrue("Joan", allresults.contains("Joan_Attr11"));
+        assertTrue("Jerry", allresults.contains("Jerry_Attr12"));
+        assertTrue("Jules", allresults.contains("Jules_Attr13"));
+    }
+
 
 
     @Test
