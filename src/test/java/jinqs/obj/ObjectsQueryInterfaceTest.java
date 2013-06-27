@@ -83,6 +83,31 @@ public class ObjectsQueryInterfaceTest {
     }
 
     @Test
+    public void testHashJoin() {
+        Fn2<String[],String[],String> selector = new Fn2<String[],String[],String>() {
+            public String apply(String[] o, String[] i) {
+                return o[0] + "_" + i[1];
+            }
+        };
+
+        Iterable<String> result = ObjectsQueryInterface.from(dataSet)
+                                                       .hashJoin(dataSet2, valueAtIndex(2), valueAtIndex(0), selector)
+                                                       .run();
+        
+        HashSet allresults = new HashSet();
+        for (String s : result) {
+            allresults.add(s);
+        }
+
+        assertEquals("Result Count", 4, allresults.size());
+        assertTrue("Jim", allresults.contains("Jim_Category A"));
+        assertTrue("Joan", allresults.contains("Joan_Category A"));
+        assertTrue("Jerry", allresults.contains("Jerry_Category B"));
+        assertTrue("Jules", allresults.contains("Jules_Category B"));
+    }
+
+
+    @Test
     public void testSelectMany() {
         // implementing join with select many
         Fn1<String[],Iterable<String[]>> selector = new Fn1<String[], Iterable<String[]>>() {

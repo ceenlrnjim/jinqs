@@ -44,6 +44,14 @@ public class ObjectsQueryInterface {
             return new Query<TJoined>(enumerable.join(source, innerSource, outerKeyFn, innerKeyFn, selector));
         }
 
+        public <TInner,TKey,TJoined> Query<TJoined> hashJoin(Iterable<TInner> innerSource, 
+                                            Fn1<T,TKey> outerKeyFn,
+                                            Fn1<TInner,TKey> innerKeyFn,
+                                            Fn2<T,TInner,TJoined> selector) {
+            return new Query<TJoined>(enumerable.hashJoin(source, innerSource, outerKeyFn, innerKeyFn, selector));
+        }
+
+
         public Query<T> orderBy(Comparator<? super T> comp) {
             return new Query<T>(enumerable.orderBy(source, comp));
         }

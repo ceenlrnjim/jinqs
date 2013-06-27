@@ -21,6 +21,18 @@ public interface Enumerable {
                                                                   Fn1<TInner, TKey> innerKeySelector,
                                                                   Fn2<TOuter, TInner, TResult> resultBuilder);
 
+    public <TOuter, TInner, TKey, TResult> Iterable<TResult> nestedLoopJoin(final Iterable<TOuter> outers, 
+                                                                            final Iterable<TInner> inners, 
+                                                                            final Fn1<TOuter, TKey> outerKeySelector,
+                                                                            final Fn1<TInner, TKey> innerKeySelector,
+                                                                            final Fn2<TOuter, TInner, TResult> resultBuilder);
+
+    public <TOuter, TInner, TKey, TResult> Iterable<TResult> hashJoin(final Iterable<TOuter> outers, 
+                                                                      final Iterable<TInner> inners, 
+                                                                      final Fn1<TOuter, TKey> outerKeySelector,
+                                                                      final Fn1<TInner, TKey> innerKeySelector,
+                                                                      final Fn2<TOuter, TInner, TResult> resultBuilder);
+
     public <K,T> IterableMap<K,? extends Iterable<T>> groupBy(Iterable<T> source, Fn1<T,K> classifier);
     public <T> Iterable<T> orderBy(Iterable<T> source, Comparator<? super T> comp);
 }
