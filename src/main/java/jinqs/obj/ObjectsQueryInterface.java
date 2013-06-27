@@ -44,6 +44,14 @@ public class ObjectsQueryInterface {
             return new Query<TJoined>(enumerable.join(source, innerSource, outerKeyFn, innerKeyFn, selector));
         }
 
+        public <TInner,TKey,TJoined> Query<TJoined> nestedLoopJoin(Iterable<TInner> innerSource, 
+                                            Fn1<T,TKey> outerKeyFn,
+                                            Fn1<TInner,TKey> innerKeyFn,
+                                            Fn2<T,TInner,TJoined> selector) {
+            return new Query<TJoined>(enumerable.nestedLoopJoin(source, innerSource, outerKeyFn, innerKeyFn, selector));
+        }
+
+
         public <TInner,TKey,TJoined> Query<TJoined> hashJoin(Iterable<TInner> innerSource, 
                                             Fn1<T,TKey> outerKeyFn,
                                             Fn1<TInner,TKey> innerKeyFn,

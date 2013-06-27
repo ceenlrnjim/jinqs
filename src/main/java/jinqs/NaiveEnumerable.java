@@ -59,31 +59,7 @@ public class NaiveEnumerable implements Enumerable {
                                                                       final Fn1<TOuter, TKey> outerKeySelector,
                                                                       final Fn1<TInner, TKey> innerKeySelector,
                                                                       final Fn2<TOuter, TInner, TResult> resultBuilder) {
-
-        // TODO: convert to lazy
-        Collection<TResult> results = new LinkedList<TResult>();
-        HashMap<TKey,Collection<TInner>> hashedInners = new <TKey,Collection<TInner>>HashMap();
-        for (TInner innerRow : inners) {
-            TKey innerKey = innerKeySelector.apply(innerRow);
-            Collection<TInner> rows = hashedInners.get(innerKey);
-            if (rows == null) {
-                rows = new LinkedList<TInner>();
-                hashedInners.put(innerKey, rows);
-            }
-            rows.add(innerRow);
-        }
-
-        for (TOuter outerRow : outers) {
-            TKey outerKey = outerKeySelector.apply(outerRow);
-            Collection<TInner> matches = hashedInners.get(outerKey);
-            if (matches != null) {
-                for (TInner innerRow : matches) {
-                    results.add(resultBuilder.apply(outerRow, innerRow));
-                }
-            }
-        }
-
-        return results;
+        return new LazyHashJoin(outers,inners,outerKeySelector,innerKeySelector, resultBuilder);
     }
 
 

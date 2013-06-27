@@ -163,4 +163,75 @@ public class ObjectsQueryInterfaceTest {
         assertEquals("Joan", resultItr.next()[0]);
         assertEquals("Jules", resultItr.next()[0]);
     }
+
+    @Test 
+    public void testHashJoinPerformsBetter() {
+        final int SIZE = 10000;
+        final int BUCKETS = 5;
+        List<String[]> items = new ArrayList<String[]>(SIZE);
+        List<String[]> buckets = new ArrayList<String[]>();
+
+        for (int i=0;i<SIZE;i++) {
+            String[] s = new String[3];
+            s[0] = String.valueOf(i);
+            s[1] = "A Item " + i;
+            s[2] = String.valueOf((int)i/BUCKETS);
+            items.add(s);
+        }
+
+        for (int i=0;i<SIZE/5;i++) {
+            String[] s = new String[2];
+            s[0] = String.valueOf(i);
+            s[1] = "Bucket " + i;
+            buckets.add(s);
+        }
+
+        Collections.shuffle(items);
+        Collections.shuffle(buckets);
+
+        long start, end, hashTime, loopTime;
+        Iterator<String[]> result;
+        
+        start = System.currentTimeMillis();
+        result = ObjectsQueryInterface.from(items)
+                                      .hashJoin(buckets, valueAtIndex(2), valueAtIndex(0), new Fn2<String[], String[], String[]>() {
+                                        public String[] apply(String[] item, String[] bucket) {
+                                            String[] result = new String[5];
+                                            result[0] = item[0];
+                                            result[1] = item[1];
+                                            result[2] = item[2];
+                                            result[3] = bucket[0];
+                                            result[4] = bucket[1];
+                                            return result;
+                                        }
+                                      }).run().iterator();
+
+        // NOTE: if lazy is working, need to iterate the collection
+        while (result.hasNext()) result.next();
+
+        end = System.currentTimeMillis();
+        hashTime = end - start;
+
+        start = System.currentTimeMillis();
+        result = ObjectsQueryInterface.from(items)
+                                      .nestedLoopJoin(buckets, valueAtIndex(2), valueAtIndex(0), new Fn2<String[], String[], String[]>() {
+                                        public String[] apply(String[] item, String[] bucket) {
+                                            String[] result = new String[5];
+                                            result[0] = item[0];
+                                            result[1] = item[1];
+                                            result[2] = item[2];
+                                            result[3] = bucket[0];
+                                            result[4] = bucket[1];
+                                            return result;
+                                        }
+                                      }).run().iterator();
+
+        while (result.hasNext()) result.next();
+
+        end = System.currentTimeMillis();
+        loopTime = end - start;
+        System.out.println("Hash = " + hashTime + ", loop = " + loopTime);
+        assertTrue(hashTime < loopTime);
+
+    }
 }
