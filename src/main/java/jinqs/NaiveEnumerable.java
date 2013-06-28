@@ -58,6 +58,11 @@ public class NaiveEnumerable implements Enumerable {
         return new LazyHashJoin(outers,inners,outerKeySelector,innerKeySelector, resultBuilder);
     }
 
+    /**
+     * Note that this join currently only supports 1-1 or many-1 joins (not 1-many or many-many).
+     * The "outer" Iterable may contain multiple matches for an item in the inners Iterable but
+     * not the other way around
+     */
     public <TOuter, TInner, TKey extends Comparable, TResult> Iterable<TResult> sortMergeJoin(final Iterable<TOuter> outers, 
                                                                           final Iterable<TInner> inners, 
                                                                           final Fn1<TOuter, TKey> outerKeySelector,
@@ -108,7 +113,9 @@ public class NaiveEnumerable implements Enumerable {
                 comp = innerKey.compareTo(outerKey);
                 if (comp == 0) {
                     results.add(resultBuilder.apply(outerRow, innerRow));
-                    innerRow = innerIterator.next();
+                    // In theory, only advancing the outer row allows multiple records in the outer collection to
+                    // match a single record in the inner collection - TODO: do I want the "many" on the outer or the inner?
+                    //innerRow = innerIterator.next();
                     outerRow = outerIterator.next();
                 } else if (comp < 0) {
                     innerRow = innerIterator.next();

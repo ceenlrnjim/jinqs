@@ -136,6 +136,31 @@ public class ObjectsQueryInterfaceTest {
         assertTrue("Jules", allresults.contains("Jules_Attr13"));
     }
 
+    @Test
+    public void testSortMergeManyToOne() {
+        Fn2<String[],String[],String> selector = new Fn2<String[],String[],String>() {
+            public String apply(String[] o, String[] i) {
+                return o[0] + "_" + i[1];
+            }
+        };
+
+        Iterable<String> result = ObjectsQueryInterface.from(dataSet)
+                                                       .sortMergeJoin(dataSet2, valueAtIndex(2), valueAtIndex(0), selector)
+                                                       .run();
+        
+        HashSet allresults = new HashSet();
+        for (String s : result) {
+            allresults.add(s);
+        }
+
+        assertEquals("Result Count", 4, allresults.size());
+        assertTrue("Jim", allresults.contains("Jim_Category A"));
+        assertTrue("Joan", allresults.contains("Joan_Category A"));
+        assertTrue("Jerry", allresults.contains("Jerry_Category B"));
+        assertTrue("Jules", allresults.contains("Jules_Category B"));
+    }
+
+
 
 
     @Test
@@ -196,7 +221,7 @@ public class ObjectsQueryInterfaceTest {
     }
 
     @Test 
-    public void testHashJoinPerformsBetter() {
+    public void testJoinPerformance() {
         final int SIZE = 10000;
         final int BUCKETS = 5;
         List<String[]> items = new ArrayList<String[]>(SIZE);
@@ -220,7 +245,7 @@ public class ObjectsQueryInterfaceTest {
         Collections.shuffle(items);
         Collections.shuffle(buckets);
 
-        long start, end, hashTime, loopTime;
+        long start, end, hashTime, loopTime, sortMergeTime;
         Iterator<String[]> result;
         
         start = System.currentTimeMillis();
@@ -261,8 +286,34 @@ public class ObjectsQueryInterfaceTest {
 
         end = System.currentTimeMillis();
         loopTime = end - start;
-        System.out.println("Hash = " + hashTime + ", loop = " + loopTime);
-        assertTrue(hashTime < loopTime);
+
+
+
+        //
+        // Sort Merge Join
+        //
+        start = System.currentTimeMillis();
+        result = ObjectsQueryInterface.from(items)
+                                      .sortMergeJoin(buckets, valueAtIndex(2), valueAtIndex(0), new Fn2<String[], String[], String[]>() {
+                                        public String[] apply(String[] item, String[] bucket) {
+                                            String[] result = new String[5];
+                                            result[0] = item[0];
+                                            result[1] = item[1];
+                                            result[2] = item[2];
+                                            result[3] = bucket[0];
+                                            result[4] = bucket[1];
+                                            return result;
+                                        }
+                                      }).run().iterator();
+
+        // Not lazy yet, but leaving to be comparable with other methods
+        while (result.hasNext()) result.next();
+
+        end = System.currentTimeMillis();
+        sortMergeTime = end - start;
+        System.out.println("Hash = " + hashTime + ", loop = " + loopTime + ", sortMerge = " + sortMergeTime);
+        assertTrue(sortMergeTime < loopTime);
+        assertTrue(hashTime < sortMergeTime);
 
     }
 }

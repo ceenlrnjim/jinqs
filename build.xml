@@ -2,11 +2,11 @@
 
 <project name="jinqs" default="compile" basedir=".">
 
-	<path id="build.tests.classpath">
-		<!-- add what is needed for AspectJ  -->
-		<pathelement location="lib/junit-4.11.jar"/>
-		<pathelement location="lib/hamcrest-core-1.3.jar"/>
-		<pathelement location="lib/ojdbc14.jar"/>
+    <path id="build.tests.classpath">
+        <!-- add what is needed for AspectJ  -->
+        <pathelement location="lib/junit-4.11.jar"/>
+        <pathelement location="lib/hamcrest-core-1.3.jar"/>
+        <pathelement location="lib/ojdbc14.jar"/>
         <pathelement location="lib/Saxon-HE-9.5.0.2.jar"/>
         <!--<pathelement location="lib/xqjapi.jar"/>-->
     </path>
