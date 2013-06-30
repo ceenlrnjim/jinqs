@@ -129,6 +129,7 @@ public class ObjectsQueryInterfaceTest {
             allresults.add(s);
         }
 
+        System.out.println(allresults);
         assertEquals("Result Count", 4, allresults.size());
         assertTrue("Jim", allresults.contains("Jim_Attr10"));
         assertTrue("Joan", allresults.contains("Joan_Attr11"));

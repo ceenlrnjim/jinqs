@@ -68,11 +68,13 @@ public class NaiveEnumerable implements Enumerable {
                                                                           final Fn1<TOuter, TKey> outerKeySelector,
                                                                           final Fn1<TInner, TKey> innerKeySelector,
                                                                           final Fn2<TOuter, TInner, TResult> resultBuilder) {
+        return new LazySortMergeJoin(outers,inners,outerKeySelector,innerKeySelector, resultBuilder);
         // TODO: this currently only supports primary key joins - there can only be one record with a given TKey in each
         // of the Iterables.  Need to implement multiple passes to support one to many relationships
         
         // TODO: make lazy?
         // TODO: require list for iterables or add to lists?
+        /*
         List<TResult> results = new LinkedList<TResult>();
         List<TOuter> sortedOuters = new LinkedList<TOuter>();
         List<TInner> sortedInners = new LinkedList<TInner>();
@@ -129,6 +131,7 @@ public class NaiveEnumerable implements Enumerable {
         }
 
         return results;
+        */
     }
 
 
