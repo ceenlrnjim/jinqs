@@ -28,6 +28,22 @@ public class NaiveEnumerable implements Enumerable {
         };
     }
 
+    public <T> Iterable<T> untilTrue(final Iterable<T> src, final Fn1<T,Boolean> pred) {
+        final Fn1<T,Boolean> inverterPred = new Fn1<T,Boolean>() {
+            public Boolean apply(T t) {
+                Boolean b = pred.apply(t);
+                return b.booleanValue() ? Boolean.FALSE : Boolean.TRUE;
+            }
+        };
+
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new WhileIterator<T>(src.iterator(), inverterPred);
+            }
+        };
+    }
+
+
 
     // Projection
     public <S,T> Iterable<T> select(Iterable<S> source, Fn1<S,T> selector) {

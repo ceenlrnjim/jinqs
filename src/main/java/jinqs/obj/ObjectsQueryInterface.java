@@ -85,6 +85,10 @@ public class ObjectsQueryInterface {
             return new Query<T>(enumerable.whileTrue(source, pred));
         }
 
+        public Query<T> untilTrue(Fn1<T,Boolean> pred) {
+            return new Query<T>(enumerable.untilTrue(source, pred));
+        }
+
         public Query<T> orderBy(Comparator<? super T> comp) {
             return new Query<T>(enumerable.orderBy(source, comp));
         }
