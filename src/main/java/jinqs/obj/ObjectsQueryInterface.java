@@ -66,6 +66,13 @@ public class ObjectsQueryInterface {
             return new Query<TJoined>(enumerable.sortMergeJoin(source, innerSource, outerKeyFn, innerKeyFn, selector));
         }
 
+        public <TInner,TKey extends Comparable,TJoined> Query<TJoined> mergeJoin(Iterable<TInner> innerSource, 
+                                            Fn1<T,TKey> outerKeyFn,
+                                            Fn1<TInner,TKey> innerKeyFn,
+                                            Fn2<T,TInner,TJoined> selector) {
+            return new Query<TJoined>(enumerable.mergeJoin(source, innerSource, outerKeyFn, innerKeyFn, selector));
+        }
+
 
 
 

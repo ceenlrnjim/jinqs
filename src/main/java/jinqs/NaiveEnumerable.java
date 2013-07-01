@@ -69,70 +69,23 @@ public class NaiveEnumerable implements Enumerable {
                                                                           final Fn1<TInner, TKey> innerKeySelector,
                                                                           final Fn2<TOuter, TInner, TResult> resultBuilder) {
         return new LazySortMergeJoin(outers,inners,outerKeySelector,innerKeySelector, resultBuilder);
-        // TODO: this currently only supports primary key joins - there can only be one record with a given TKey in each
-        // of the Iterables.  Need to implement multiple passes to support one to many relationships
-        
-        // TODO: make lazy?
-        // TODO: require list for iterables or add to lists?
-        /*
-        List<TResult> results = new LinkedList<TResult>();
-        List<TOuter> sortedOuters = new LinkedList<TOuter>();
-        List<TInner> sortedInners = new LinkedList<TInner>();
-
-        for (TOuter row : outers) sortedOuters.add(row);
-        for (TInner row : inners) sortedInners.add(row);
-
-        if (sortedOuters.size() == 0 || sortedInners.size() == 0) {
-            return Collections.EMPTY_LIST;
-        }
-
-        Collections.sort(sortedOuters, new Comparator<TOuter>() {
-            public int compare(TOuter a, TOuter b) {
-                return outerKeySelector.apply(a).compareTo(outerKeySelector.apply(b));
-            }
-        });
-
-        Collections.sort(sortedInners, new Comparator<TInner>() {
-            public int compare(TInner a, TInner b) {
-                return innerKeySelector.apply(a).compareTo(innerKeySelector.apply(b));
-            }
-        });
-
-        Iterator<TInner> innerIterator = sortedInners.iterator();
-        Iterator<TOuter> outerIterator = sortedOuters.iterator();
-
-        TInner innerRow;
-        TOuter outerRow;
-        TKey innerKey, outerKey;
-        int comp;
-
-        innerRow = innerIterator.next();
-        outerRow = outerIterator.next();
-        try {
-            while (true) {
-                innerKey = innerKeySelector.apply(innerRow);
-                outerKey = outerKeySelector.apply(outerRow);
-                comp = innerKey.compareTo(outerKey);
-                if (comp == 0) {
-                    results.add(resultBuilder.apply(outerRow, innerRow));
-                    // In theory, only advancing the outer row allows multiple records in the outer collection to
-                    // match a single record in the inner collection - TODO: do I want the "many" on the outer or the inner?
-                    //innerRow = innerIterator.next();
-                    outerRow = outerIterator.next();
-                } else if (comp < 0) {
-                    innerRow = innerIterator.next();
-                } else if (comp > 0) {
-                    outerRow = outerIterator.next();
-                }
-            }
-        } catch (NoSuchElementException nsee) {
-            // we've run out of rows - not an error, just easier that putting all the right hasNext calls
-            
-        }
-
-        return results;
-        */
     }
+
+    /**
+     * Notes: this should only be called with Iterables that are already sorted by their TKey values.  This
+     * is the same as sort merge but without the sort (it is assumed to have been already done).
+     * Note also that this join currently only supports 1-1 or many-1 joins (not 1-many or many-many).
+     * The "outer" Iterable may contain multiple matches for an item in the inners Iterable but
+     * not the other way around
+     */
+    public <TOuter, TInner, TKey extends Comparable, TResult> Iterable<TResult> mergeJoin(final Iterable<TOuter> outers, 
+                                                                          final Iterable<TInner> inners, 
+                                                                          final Fn1<TOuter, TKey> outerKeySelector,
+                                                                          final Fn1<TInner, TKey> innerKeySelector,
+                                                                          final Fn2<TOuter, TInner, TResult> resultBuilder) {
+        return new LazyMergeJoin(outers,inners,outerKeySelector,innerKeySelector, resultBuilder);
+    }
+
 
 
     public <K,T> IterableMap<K,? extends Iterable<T>> groupBy(Iterable<T> source, Fn1<T,K> classifier) {

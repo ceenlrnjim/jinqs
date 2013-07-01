@@ -40,6 +40,21 @@ public interface Enumerable {
                                                                           final Fn1<TInner, TKey> innerKeySelector,
                                                                           final Fn2<TOuter, TInner, TResult> resultBuilder);
 
+    /**
+     * Notes: this should only be called with Iterables that are already sorted by their TKey values.  This
+     * is the same as sort merge but without the sort (it is assumed to have been already done).
+     * Note also that this join currently only supports 1-1 or many-1 joins (not 1-many or many-many).
+     * The "outer" Iterable may contain multiple matches for an item in the inners Iterable but
+     * not the other way around
+     */
+    public <TOuter, TInner, TKey extends Comparable, TResult> Iterable<TResult> mergeJoin(final Iterable<TOuter> outers, 
+                                                                          final Iterable<TInner> inners, 
+                                                                          final Fn1<TOuter, TKey> outerKeySelector,
+                                                                          final Fn1<TInner, TKey> innerKeySelector,
+                                                                          final Fn2<TOuter, TInner, TResult> resultBuilder);
+
+
     public <K,T> IterableMap<K,? extends Iterable<T>> groupBy(Iterable<T> source, Fn1<T,K> classifier);
     public <T> Iterable<T> orderBy(Iterable<T> source, Comparator<? super T> comp);
+
 }
