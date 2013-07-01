@@ -59,5 +59,7 @@ public interface Enumerable {
 
     public <T> Iterable<T> take(Iterable<T> src, int count);
     public <T> Iterable<T> drop(Iterable<T> src, int count);
+    public <T> Iterable<T> whileTrue(Iterable<T> src, Fn1<T,Boolean> pred);
+
 
 }

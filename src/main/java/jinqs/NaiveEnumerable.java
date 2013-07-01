@@ -20,6 +20,14 @@ public class NaiveEnumerable implements Enumerable {
         };
     }
 
+    public <T> Iterable<T> whileTrue(final Iterable<T> src, final Fn1<T,Boolean> pred) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new WhileIterator<T>(src.iterator(), pred);
+            }
+        };
+    }
+
 
     // Projection
     public <S,T> Iterable<T> select(Iterable<S> source, Fn1<S,T> selector) {

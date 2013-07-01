@@ -81,9 +81,14 @@ public class ObjectsQueryInterface {
             return new Query<T>(enumerable.drop(source, count));
         }
 
+        public Query<T> whileTrue(Fn1<T,Boolean> pred) {
+            return new Query<T>(enumerable.whileTrue(source, pred));
+        }
+
         public Query<T> orderBy(Comparator<? super T> comp) {
             return new Query<T>(enumerable.orderBy(source, comp));
         }
+
 
         // Note: this is not lazy
         // TODO: get the types to work
