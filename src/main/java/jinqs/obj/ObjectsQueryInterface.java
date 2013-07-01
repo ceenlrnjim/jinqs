@@ -77,6 +77,10 @@ public class ObjectsQueryInterface {
             return new Query<T>(enumerable.take(source, count));
         }
 
+        public Query<T> drop(int count) {
+            return new Query<T>(enumerable.drop(source, count));
+        }
+
         public Query<T> orderBy(Comparator<? super T> comp) {
             return new Query<T>(enumerable.orderBy(source, comp));
         }

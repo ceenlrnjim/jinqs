@@ -58,5 +58,6 @@ public interface Enumerable {
     public <T> Iterable<T> orderBy(Iterable<T> source, Comparator<? super T> comp);
 
     public <T> Iterable<T> take(Iterable<T> src, int count);
+    public <T> Iterable<T> drop(Iterable<T> src, int count);
 
 }
