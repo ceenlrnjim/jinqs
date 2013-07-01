@@ -73,8 +73,9 @@ public class ObjectsQueryInterface {
             return new Query<TJoined>(enumerable.mergeJoin(source, innerSource, outerKeyFn, innerKeyFn, selector));
         }
 
-
-
+        public Query<T> take(int count) {
+            return new Query<T>(enumerable.take(source, count));
+        }
 
         public Query<T> orderBy(Comparator<? super T> comp) {
             return new Query<T>(enumerable.orderBy(source, comp));

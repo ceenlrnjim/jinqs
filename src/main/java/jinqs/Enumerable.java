@@ -57,4 +57,6 @@ public interface Enumerable {
     public <K,T> IterableMap<K,? extends Iterable<T>> groupBy(Iterable<T> source, Fn1<T,K> classifier);
     public <T> Iterable<T> orderBy(Iterable<T> source, Comparator<? super T> comp);
 
+    public <T> Iterable<T> take(Iterable<T> src, int count);
+
 }

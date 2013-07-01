@@ -4,6 +4,14 @@ import java.util.*;
 
 public class NaiveEnumerable implements Enumerable {
 
+    public <T> Iterable<T> take(final Iterable<T> src, final int count) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return new TakeIterator<T>(src.iterator(), count);
+            }
+        };
+    }
+
     // Projection
     public <S,T> Iterable<T> select(Iterable<S> source, Fn1<S,T> selector) {
         return new LazySelect(source, selector);
