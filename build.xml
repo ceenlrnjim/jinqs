@@ -42,7 +42,7 @@
 
     <target name="test" depends="test-compile">
         <mkdir dir="target/test-output"/>
-        <junit printsummary="yes">
+        <junit showoutput="true" printsummary="on">
 
             <classpath>
                 <pathelement location="target/test-classes"/>

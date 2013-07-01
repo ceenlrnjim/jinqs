@@ -32,6 +32,8 @@ public class LazySortMergeJoin<TOuter, TInner, TKey extends Comparable, TResult>
         private TResult nextItem = null;
         private TInner innerRow;
         private TOuter outerRow;
+        // state used to tell the next iteration what to increment (outer/inner)
+        private boolean[] increment = new boolean[] { true, true };
 
         public LazySortMergeIterator() {
 
@@ -60,9 +62,6 @@ public class LazySortMergeJoin<TOuter, TInner, TKey extends Comparable, TResult>
 
             this.innerIterator = sortedInners.iterator();
             this.outerIterator = sortedOuters.iterator();
-
-            innerRow = innerIterator.next();
-            outerRow = outerIterator.next();
             advance();
         }
 
@@ -80,27 +79,34 @@ public class LazySortMergeJoin<TOuter, TInner, TKey extends Comparable, TResult>
             throw new UnsupportedOperationException("Remove not supported");
         }
 
+
         private void advance() {
             TKey innerKey, outerKey;
             int comp;
 
             try {
+                while(true) {
+                    if (increment[0]) {
+                        outerRow = outerIterator.next();
+                    }
+                    if (increment[1]) {
+                        innerRow = innerIterator.next();
+                    }
 
-                while (true) {
                     innerKey = innerKeySelector.apply(innerRow);
                     outerKey = outerKeySelector.apply(outerRow);
                     comp = innerKey.compareTo(outerKey);
                     if (comp == 0) {
                         nextItem = resultBuilder.apply(outerRow, innerRow);
-                        // In theory, only advancing the outer row allows multiple records in the outer collection to
-                        // match a single record in the inner collection - TODO: do I want the "many" on the outer or the inner?
-                        //innerRow = innerIterator.next();
-                        outerRow = outerIterator.next();
+                        increment[0] = true;
+                        increment[1] = false;
                         return;
                     } else if (comp < 0) {
-                        innerRow = innerIterator.next();
+                        increment[0] = false;
+                        increment[1] = true;
                     } else if (comp > 0) {
-                        outerRow = outerIterator.next();
+                        increment[0] = true;
+                        increment[1] = false;
                     }
                 }
             } catch (NoSuchElementException nsee) {
